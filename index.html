@@ -1,33 +1,29 @@
 <!DOCTYPE html>
-<html ng-app="myApp">
+<html>
 <head>
 	<title></title>
-
 	<style type="text/css" media="screen">
 		html {
+			max-width: 100vw;
 			background: url('http://www.magic4walls.com/wp-content/uploads/2014/03/texture-flag-wall-colored-pattren-triangles-background-hd-wallpapar.jpg');
 		}
-
-		#chats, #chat-stuff{
+		#chats, #user-list, canvas {
 			border:  2px solid black;
-			width:  45%;
 			display: inline-block;
-			min-height: 90vh;
-			background: #FFF;
-			opacity: 0.6;
 			margin-top: 40px;
 			border-radius: 20px;
-
 		}
 		#chats {
+			max-height: 400px;
+			margin-right: 1vw;
+			width: 30%;
 			padding-left: 5%;
 			white-space: pre-wrap;
 		}
-		#chat-stuff{
-			float: right;
-			margin-right: 30vw;
+		#user-list{
+			margin-left: 1vw;
 			text-align: center;
-			width: 15%;
+			width: 10%;
 			background: red;
 			color: white;
 			font-size: 20px;
@@ -38,83 +34,133 @@
 			text-shadow: 0 0 3px #FF0000, 0 0 5px #0000FF;
 			text-decoration: underline;
 		}
+
+		#thickness-picker {
+			width: 35px;
+			height: 20px;
+		}
+		#color-picker {
+			width: 20px;
+			height: 15px;
+		}
+		canvas {
+			background: #FFF;
+
+		}
 	</style>
-
+	<!--<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+				SOCKET.IO	JAVASCRIPT
+	<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>-->
 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
-
 	<script type="text/javascript">
-	
 		var socketio = io.connect('http://127.0.0.1:8080');
 		var name = prompt('Please give us your handle');
 		socketio.emit('name_to_server', name);
-
 		socketio.on('message_to_client', function(data){
 			document.getElementById('chats').innerHTML += '<div class="im">' + data.message + ' -- ' + data.name + ' -- ' +data.date+'</div>';
 		})
-
 		socketio.on('users', function(socketUsers){
 			var newHTML = "";
-			// console.log(data.socketUsers.length);
 			for(var i=0; i < socketUsers.length; i++){
-				// console.log(i);
 				 newHTML += '<li class="user">'+socketUsers[i].name+'</li>'
 			}
 			document.getElementById('chat-stuff').innerHTML = newHTML;
 		});
-
 		function sendMessage(){
 			var date = new Date().toLocaleString();
 			var message = document.getElementById('message').value;
-			socketio.emit(
-				'message_to_server',
+			socketio.emit('message_to_server', 
 				{
-					message: message,
-					name: name,
+					message: message, 
+					name: name, 
 					date: date
-				}
-			);
+				});
 		}
-
 		function sendName(){
 			name = document.getElementById('nameInput').value;
 			socketio.emit('name_to_server', name)
 		}
-
 	</script>
-
 </head>
 <body>
-
 	<h1>Chat Room</h1>
-
 	<div id="name">
-		<input style="width: 300px; height: 30px; font-size: 22px" type="text" id="nameInput" placeholder="Name">
-		<button style="height: 30px" onclick="sendName()">Submit</button>
+		<input type="number" id="thickness-picker" placeholder="Tip">
+		<input type="color" id="color-picker">	
 		<input style="width: 300px; height: 30px; font-size: 22px; margin-left: 20px" type="text" id="message" placeholder="Your message here">
 		<button style="height: 30px" onclick="sendMessage()">Send</button>
+		<input style="width: 300px; height: 30px; font-size: 22px; margin-left: 20px" type="text" id="nameInput" placeholder="Name">
+		<button style="height: 30px" onclick="sendName()">Submit</button>
+		
 	</div>
-
 	<div id="chat-window">
-
+		<canvas style="float: left; height: 60vh" id="canvas"></canvas>
 		<div id="chats"></div>
-		<div id="chat-stuff">
-			<!-- <ul>
-				<li ng-repeat="name in userNames">
-					{{name}}
-				</li>
-			</ul> -->
-		</div>
+		<div id="user-list"></div>
 	</div>
-
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+<!--<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+				CANVAS	JAVASCRIPT
+<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>-->
 <script type="text/javascript">
-	var myApp = angular.module('myApp', []);
-	myApp.controller('myController',function($scope){
-		$scope.message = "Test";
-	});
+
+	//<<<<<<<<<CANVAS SECTION START>>>>>>>>>>>>>>>>
+		var canvas = document.getElementById('canvas');
+		var context = canvas.getContext('2d');
+		var mouseDown = false;
+		var color = '#000';
+		var thickness = 7;
+		var colorChoice = document.getElementById('color-picker');
+		var mousePosition;
+		var lastMousePosition = null;
+		colorChoice.addEventListener('change', function(event){
+			color = colorChoice.value;
+			console.log(color);
+		});
+		var thicknessPicker = document.getElementById('thickness-picker');
+		thicknessPicker.addEventListener('change', function(event){
+			thickness = thicknessPicker.value;
+			console.log(thickness);
+		});
+		canvas.addEventListener('mousedown', function(event){
+			mouseDown = true;
+
+		})
+		canvas.addEventListener('mouseup', function(event){
+			mouseDown = false;
+			lastMousePosition = null;
+		})
+		canvas.addEventListener('mousemove', function(event){
+			if(mouseDown){
+				console.log(event);
+				var magicBrushX = event.pageX - canvas.offsetLeft;
+				var magicBrushY = event.pageY - canvas.offsetTop;
+				mousePosition = {
+					x: magicBrushX,
+					y: magicBrushY
+				}
+				console.log(mousePosition);
+				if(lastMousePosition !== null){
+					context.strokeStyle = color;
+					context.lineJoin = 'round';
+					context.lineWidth = thickness;
+					context.beginPath();
+					context.moveTo(lastMousePosition.x, lastMousePosition.y);
+					context.lineTo(mousePosition.x, mousePosition.y);
+					context.closePath();
+					context.stroke();
+				}
+			var drawingData = {
+				mousePosition: mousePosition,
+				lastMousePosition: lastMousePosition,
+				color: color,
+				thickness: thickness
+			}
+			lastMousePosition = {
+				x: mousePosition.x,
+				y: mousePosition.y
+			};
+			}
+		})
 </script>
-
-
-
 </body>
 </html>

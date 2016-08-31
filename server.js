@@ -5,20 +5,6 @@ var fs = require("fs");
 //server is listening below for http traffic at port XXXX
 var server = http.createServer(function(req, res){
 
-
-	// if(req.url === '/styles.css'){
-		// fs.readFile('styles.css', 'utf-8', function(error, data){
-		// 	// console.log(error);
-		// 	// console.log(data);
-		// 	if(error){
-		// 		res.writeHead(500, {'content-type': 'text/html'});
-		// 		res.end(error);
-		// 	}else{
-		// 		res.writeHead(200, {'content-type': 'text/html'});
-		// 		res.end(data);
-		// 	});
-	// }
-
 	console.log("Someone connected via http");
 	fs.readFile('index.html', 'utf-8', function(error, data){
 		// console.log(error);
@@ -37,6 +23,7 @@ var server = http.createServer(function(req, res){
 var socketIo = require('socket.io');
 // listen to the server which is listening on port XXXX
 var io = socketIo.listen(server);
+// an array of objects with two properties
 var socketUsers = [];
 
 //We need to deal wiht a new socket connection
@@ -49,12 +36,11 @@ io.sockets.on('connect', function(socket){
 
 	io.sockets.emit('users', socketUsers);	
 
-	// console.log(socket);
 	console.log("Someone connected via a socket!");
 	//someone just changed their name
 	socket.on('name_to_server', function(name){
+		console.log(socket.id + " -- user has connected");
 		for(var i = 0; i < socketUsers.length; i++){
-			console.log(socket.id);
 			if(socketUsers[i].socketID == socket.id){
 				socketUsers[i].name = name;
 				break;
@@ -70,7 +56,7 @@ io.sockets.on('connect', function(socket){
 		});
 	});
 	socket.on('disconnect', function(){
-		console.log("A user has disconnected");
+		console.log(socket.id + "-- user has disconnected");
 		for(var i = 0; i < socketUsers.length; i++){
 			if(socketUsers[i].socketID == socket.id){
 				socketUsers.splice(i, 1);
