@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+	<title></title>
+
+	<style type="text/css" media="screen">
+		html {
+			background: url('http://www.magic4walls.com/wp-content/uploads/2014/03/texture-flag-wall-colored-pattren-triangles-background-hd-wallpapar.jpg');
+		}
+
+		#chats, #chat-stuff{
+			border:  2px solid black;
+			width:  45%;
+			display: inline-block;
+			min-height: 90vh;
+			background: #FFF;
+			opacity: 0.6;
+			margin-top: 40px;
+			border-radius: 20px;
+
+		}
+		#chats {
+			padding-left: 5%;
+			white-space: pre-wrap;
+		}
+		#chat-stuff{
+			float: right;
+			margin-right: 30vw;
+			text-align: center;
+			width: 15%;
+			background: red;
+			color: white;
+			font-size: 20px;
+		}
+		h1 {
+			text-align: center;
+			color: #FFF;
+			text-shadow: 0 0 3px #FF0000, 0 0 5px #0000FF;
+			text-decoration: underline;
+		}
+	</style>
+
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+	<script type="text/javascript">
+	
+		var socketio = io.connect('http://127.0.0.1:8080');
+		var name = prompt('Please give us your handle');
+		socketio.emit('name_to_server', name);
+
+		socketio.on('message_to_client', function(data){
+			document.getElementById('chats').innerHTML += '<div class="im">' + data.message + ' -- ' + data.name + ' -- ' +data.date+'</div>';
+		})
+
+		socketio.on('users', function(socketUsers){
+			var newHTML = "";
+			// console.log(data.socketUsers.length);
+			for(var i=0; i < socketUsers.length; i++){
+				// console.log(i);
+				 newHTML += '<li class="user">'+socketUsers[i].name+'</li>'
+			}
+			document.getElementById('chat-stuff').innerHTML = newHTML;
+		});
+
+		function sendMessage(){
+			var date = new Date().toLocaleString();
+			var message = document.getElementById('message').value;
+			socketio.emit(
+				'message_to_server',
+				{
+					message: message,
+					name: name,
+					date: date
+				}
+			);
+		}
+
+		function sendName(){
+			name = document.getElementById('nameInput').value;
+			socketio.emit('name_to_server', name)
+		}
+
+	</script>
+
+</head>
+<body>
+
+	<h1>Chat Room</h1>
+
+	<div id="name">
+		<input style="width: 300px; height: 30px; font-size: 22px" type="text" id="nameInput" placeholder="Name">
+		<button style="height: 30px" onclick="sendName()">Submit</button>
+		<input style="width: 300px; height: 30px; font-size: 22px; margin-left: 20px" type="text" id="message" placeholder="Your message here">
+		<button style="height: 30px" onclick="sendMessage()">Send</button>
+	</div>
+
+	<div id="chat-window">
+
+		<div id="chats"></div>
+		<div id="chat-stuff">
+			<!-- <ul>
+				<li ng-repeat="name in userNames">
+					{{name}}
+				</li>
+			</ul> -->
+		</div>
+	</div>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+<script type="text/javascript">
+	var myApp = angular.module('myApp', []);
+	myApp.controller('myController',function($scope){
+		$scope.message = "Test";
+	});
+</script>
+
+
+
+</body>
+</html>

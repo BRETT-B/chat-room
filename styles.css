@@ -1,0 +1,21 @@
+<style>
+		html {
+			background: url('http://www.magic4walls.com/wp-content/uploads/2014/03/texture-flag-wall-colored-pattren-triangles-background-hd-wallpapar.jpg');
+		}	
+		#chats, #chat-win {
+			border: 2px solid black;
+			width:  30%;
+			display: inline-block;
+			min-height: 90vh;
+			background: #FFF;
+			margin-top: 20px;
+		}
+		#chat-win {
+			float: right;
+			margin-right: 30%;
+		}
+		#name {
+			text-align: center;
+		}
+
+	</style>
