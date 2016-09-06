@@ -8,24 +8,29 @@
 			background: url('http://www.magic4walls.com/wp-content/uploads/2014/03/texture-flag-wall-colored-pattren-triangles-background-hd-wallpapar.jpg');
 		}
 		#chats, #user-list, canvas {
+			margin-top: 40px;
 			border:  2px solid black;
 			display: inline-block;
-			margin-top: 40px;
 			border-radius: 20px;
 		}
 		#chats {
-			max-height: 400px;
-			margin-right: 1vw;
+			color: #FFF;
+			background: #98DF00;
+			opacity: 0.6;
+			min-height: 60vh;
+			margin-left: 1vw;
 			width: 30%;
 			padding-left: 5%;
 			white-space: pre-wrap;
 		}
 		#user-list{
+			opacity: 0.6;
+			min-height: 60vh;
 			margin-left: 1vw;
 			text-align: center;
-			width: 10%;
+			width: 15%;
 			background: red;
-			color: white;
+			color: #FFF;
 			font-size: 20px;
 		}
 		h1 {
@@ -34,7 +39,10 @@
 			text-shadow: 0 0 3px #FF0000, 0 0 5px #0000FF;
 			text-decoration: underline;
 		}
-
+		#name {
+			margin: 0 auto;
+			text-align: center;
+		}
 		#thickness-picker {
 			width: 35px;
 			height: 20px;
@@ -45,7 +53,9 @@
 		}
 		canvas {
 			background: #FFF;
-
+		}
+		#chat-window {
+			text-align: center;
 		}
 	</style>
 	<!--<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
@@ -85,8 +95,8 @@
 <body>
 	<h1>Chat Room</h1>
 	<div id="name">
-		<input type="number" id="thickness-picker" placeholder="Tip">
 		<input type="color" id="color-picker">	
+		<input type="number" id="thickness-picker" placeholder="Tip">
 		<input style="width: 300px; height: 30px; font-size: 22px; margin-left: 20px" type="text" id="message" placeholder="Your message here">
 		<button style="height: 30px" onclick="sendMessage()">Send</button>
 		<input style="width: 300px; height: 30px; font-size: 22px; margin-left: 20px" type="text" id="nameInput" placeholder="Name">
@@ -94,7 +104,7 @@
 		
 	</div>
 	<div id="chat-window">
-		<canvas style="float: left; height: 60vh" id="canvas"></canvas>
+		<canvas style="float: left; height: 580px; width: 550px" id="canvas"></canvas>
 		<div id="chats"></div>
 		<div id="user-list"></div>
 	</div>
@@ -155,12 +165,24 @@
 				color: color,
 				thickness: thickness
 			}
+			socketio.emit('drawing_to_server', drawingData);
 			lastMousePosition = {
 				x: mousePosition.x,
 				y: mousePosition.y
 			};
 			}
 		})
+
+		socketio.on('drawing_to_client', function(drawingData){
+			context.strokeStyle = drawingData.color;
+			context.lineJoin = 'round';
+			context.lineWidth = drawingData.thickness;
+			context.beginPath();
+			context.moveTo(drawingData.lastMousePosition.x, drawingData.lastMousePosition.y);
+			context.lineTo(drawingData.mousePosition.x, drawingData.mousePosition.y);
+			context.closePath();
+			context.stroke();
+		});
 </script>
 </body>
 </html>
